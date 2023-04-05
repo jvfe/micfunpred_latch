@@ -26,7 +26,7 @@ FLOW = [
     )
 ]
 
-WORKFLOW_NAME = "workflow"
+WORKFLOW_NAME = "MicFunPred"
 
 wf_docs = LatchMetadata(
     display_name=WORKFLOW_NAME,

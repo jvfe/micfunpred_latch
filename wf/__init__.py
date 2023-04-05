@@ -10,7 +10,7 @@ from .types import Sample
 
 
 @medium_task
-def run_software(sample: Sample) -> LatchDir:
+def run_micfunpred(sample: Sample) -> LatchDir:
     """Task to run a software"""
 
     sample_name = sample.name
@@ -36,7 +36,7 @@ def run_software(sample: Sample) -> LatchDir:
 
 
 @workflow(wf_docs)
-def test_workflow(sample: Sample) -> LatchDir:
+def micfunpred(sample: Sample) -> LatchDir:
     """Workflow to do X
 
     Header
@@ -45,17 +45,17 @@ def test_workflow(sample: Sample) -> LatchDir:
     This is a workflow that does X.
 
     """
-    return run_software(sample=sample)
+    return run_micfunpred(sample=sample)
 
 
-LaunchPlan(
-    test_workflow,
-    "Test Data",
-    {
-        "sample": Sample(
-            name="SRR579292",
-            read1=LatchFile("s3://latch-public/test-data/4318/SRR579292_1.fastq"),
-            read2=LatchFile("s3://latch-public/test-data/4318/SRR579292_2.fastq"),
-        )
-    },
-)
+# LaunchPlan(
+#     micfunpred,
+#     "Test Data",
+#     {
+#         "sample": Sample(
+#             name="SRR579292",
+#             read1=LatchFile("s3://latch-public/test-data/4318/SRR579292_1.fastq"),
+#             read2=LatchFile("s3://latch-public/test-data/4318/SRR579292_2.fastq"),
+#         )
+#     },
+# )

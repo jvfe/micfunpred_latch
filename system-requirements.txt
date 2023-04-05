@@ -1,0 +1,4 @@
+curl
+unzip
+ncbi-blast+
+glpk-utils
