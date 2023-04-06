@@ -54,7 +54,7 @@ def run_micfunpred(sample: MicFunPredInput) -> LatchDir:
 
     subprocess.run(_run_cmd)
 
-    return LatchDir(str(local_resultpath), f"latch:///{results_path}/")
+    return LatchDir(str(local_resultpath), f"latch:///{results_path}/{sample_name}")
 
 
 @workflow(wf_docs)
