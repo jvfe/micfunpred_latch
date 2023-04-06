@@ -85,7 +85,9 @@ def micfunpred(
         samples=samples, perc_ident=perc_ident, genecov=genecov
     )
 
-    return map_task(run_micfunpred)(sample=micfunpred_inputs)
+    micfunpred_outs = map_task(run_micfunpred)(sample=micfunpred_inputs)
+
+    return micfunpred_outs
 
 
 LaunchPlan(
