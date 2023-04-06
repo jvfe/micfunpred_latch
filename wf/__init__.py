@@ -53,7 +53,6 @@ def run_micfunpred(sample: MicFunPredInput) -> LatchDir:
         "--threads",
         "32",
         "--contrib",
-        "--plot",
     ]
 
     subprocess.run(_run_cmd)
