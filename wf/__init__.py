@@ -32,11 +32,8 @@ def run_micfunpred(sample: MicFunPredInput) -> LatchDir:
     """Task to run a software"""
 
     sample_name = sample.name
+    local_resultpath = Path(sample_name).resolve()
     results_path = "MicFunPred_results"
-    output_dir = Path(results_path).resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    output_prefix = f"{str(output_dir)}/{sample_name}"
 
     _run_cmd = [
         "MicFunPred_run_pipeline.py",
@@ -49,7 +46,7 @@ def run_micfunpred(sample: MicFunPredInput) -> LatchDir:
         "--genecov",
         str(sample.genecov),
         "--output",
-        output_prefix,
+        str(local_resultpath),
         "--threads",
         "32",
         "--contrib",
@@ -57,7 +54,7 @@ def run_micfunpred(sample: MicFunPredInput) -> LatchDir:
 
     subprocess.run(_run_cmd)
 
-    return LatchDir(str(output_dir), f"latch:///{results_path}/{sample_name}")
+    return LatchDir(str(local_resultpath), f"latch:///{results_path}/")
 
 
 @workflow(wf_docs)
