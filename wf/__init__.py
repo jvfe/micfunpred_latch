@@ -1,33 +1,59 @@
 import subprocess
 from pathlib import Path
 
-from latch import medium_task, workflow
+from latch import medium_task, workflow, small_task, map_task
 from latch.resources.launch_plan import LaunchPlan
 from latch.types import LatchDir, LatchFile
 
-from .docs import wf_docs
-from .types import Sample
+from typing import List
+
+from wf.docs import wf_docs
+from wf.types import Sample, MicFunPredInput
+
+
+@small_task
+def organize_inputs(
+    samples: List[Sample], perc_ident: int, genecov: float
+) -> List[MicFunPredInput]:
+    return [
+        MicFunPredInput(
+            name=sample.name,
+            otu_table=sample.otu_table,
+            repset_seq=sample.repset_seq,
+            perc_ident=perc_ident,
+            genecov=genecov,
+        )
+        for sample in samples
+    ]
 
 
 @medium_task
-def run_micfunpred(sample: Sample) -> LatchDir:
+def run_micfunpred(sample: MicFunPredInput) -> LatchDir:
     """Task to run a software"""
 
     sample_name = sample.name
-    results_path = "program_results"
+    results_path = "MicFunPred_results"
     output_dir = Path(results_path).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
     output_prefix = f"{str(output_dir)}/{sample_name}"
 
     _run_cmd = [
-        "software",
-        "--in1",
-        sample.read1.local_path,
-        "--in2",
-        sample.read2.local_path,
-        "-o",
+        "MicFunPred_run_pipeline.py",
+        "--otu_table",
+        sample.otu_table.local_path,
+        "--repset_seq",
+        sample.repset_seq.local_path,
+        "--perc_ident",
+        str(sample.perc_ident),
+        "--genecov",
+        str(sample.genecov),
+        "--output",
         output_prefix,
+        "--threads",
+        "32",
+        "--contrib",
+        "--plot",
     ]
 
     subprocess.run(_run_cmd)
@@ -36,26 +62,50 @@ def run_micfunpred(sample: Sample) -> LatchDir:
 
 
 @workflow(wf_docs)
-def micfunpred(sample: Sample) -> LatchDir:
-    """Workflow to do X
+def micfunpred(
+    samples: List[Sample], perc_ident: int = 97, genecov: float = 0.5
+) -> List[LatchDir]:
+    """A conserved approach to predict functional profiles from 16S rRNA sequence data
 
-    Header
+    MicFunPred
     ------
 
-    This is a workflow that does X.
+    MicFunPred[^1] is a tool to predict functional profiles from 16S
+    (Amplicon) data. It relies on ~32,000 genome sequences downloaded
+    from Integrated Microbial Genome database (IMG) representing human,
+    plants, mammals, aquatic and terrestrial ecosystem.
 
+    It uses as input:
+    - Abundance/BIOM table (tab separated)
+    - OTUs/ASVs sequences (FASTA format)
+
+
+    [^1]: Dattatray S. Mongad, Nikeeta S. Chavan, Nitin P. Narwade, Kunal Dixit,
+    Yogesh S. Shouche, Dhiraj P. Dhotre, MicFunPred: A conserved approach to
+    predict functional profiles from 16S rRNA gene sequence data, Genomics.
+    https://doi.org/10.1016/j.ygeno.2021.08.016
     """
-    return run_micfunpred(sample=sample)
+    micfunpred_inputs = organize_inputs(
+        samples=samples, perc_ident=perc_ident, genecov=genecov
+    )
+
+    return map_task(run_micfunpred)(sample=micfunpred_inputs)
 
 
-# LaunchPlan(
-#     micfunpred,
-#     "Test Data",
-#     {
-#         "sample": Sample(
-#             name="SRR579292",
-#             read1=LatchFile("s3://latch-public/test-data/4318/SRR579292_1.fastq"),
-#             read2=LatchFile("s3://latch-public/test-data/4318/SRR579292_2.fastq"),
-#         )
-#     },
-# )
+LaunchPlan(
+    micfunpred,
+    "Test Data",
+    {
+        "samples": [
+            Sample(
+                name="Test_Sample",
+                otu_table=LatchFile(
+                    "s3://latch-public/test-data/4318/micfunpred_test_counts.tsv"
+                ),
+                repset_seq=LatchFile(
+                    "s3://latch-public/test-data/4318/micfunpred_test.fasta"
+                ),
+            )
+        ]
+    },
+)

@@ -1,4 +1,5 @@
 from latch.types.metadata import (
+    Spoiler,
     LatchAuthor,
     LatchMetadata,
     LatchParameter,
@@ -8,10 +9,21 @@ from latch.types.metadata import (
 )
 
 PARAMS = {
-    "sample": LatchParameter(
-        display_name="Paired-end reads",
-        description="FASTQ files",
-        batch_table_column=True,
+    "samples": LatchParameter(
+        display_name="MicFunPred Input",
+        samplesheet=True,
+    ),
+    "perc_ident": LatchParameter(
+        display_name="Percent identity",
+        description="Percent identity cut-off to assign genus",
+    ),
+    "genecov": LatchParameter(
+        display_name="Gene Coverage",
+        description=(
+            "Percentage of organism in a genus "
+            "to define it as core."
+            " Value ranges from 0 to 1."
+        ),
     ),
 }
 
@@ -19,11 +31,21 @@ FLOW = [
     Section(
         "Samples",
         Text(
-            "Sample provided has to include an identifier for the sample (Sample name)"
-            " and two files corresponding to the reads (paired-end)"
+            "Sample provided has to include an identifier for the sample (Name)"
+            " and two files corresponding to the tab-separated table of OTU abundances"
+            " (OTU table) and a multi-FASTA file of OTU sequences (RepSet Seq)."
         ),
-        Params("sample"),
-    )
+        Params("samples"),
+    ),
+    Spoiler(
+        "Optional parameters",
+        Text(
+            "Optional parameters for MicFunPred."
+            "See the [MicFunPred documentation](https://github.com/microDM/MicFunPred#running-micfunpred)"
+            " for further details"
+        ),
+        Params("perc_ident", "genecov"),
+    ),
 ]
 
 WORKFLOW_NAME = "MicFunPred"
@@ -38,6 +60,6 @@ wf_docs = LatchMetadata(
     repository=f"https://github.com/jvfe/{WORKFLOW_NAME}_latch",
     license="MIT",
     parameters=PARAMS,
-    tags=["NGS"],
+    tags=["16S", "Amplicon", "Functional profiling"],
     flow=FLOW,
 )
