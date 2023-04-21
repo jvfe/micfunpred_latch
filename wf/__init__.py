@@ -31,7 +31,7 @@ def organize_inputs(
 def run_micfunpred(sample: MicFunPredInput) -> LatchDir:
     """Task to run a software"""
 
-    sample_name = sample.name
+    sample_name = sample.name.lower().replace(" ", "_")
     local_resultpath = Path(sample_name).resolve()
     results_path = f"MicFunPred_{sample_name}"
 
@@ -96,7 +96,7 @@ LaunchPlan(
     {
         "samples": [
             Sample(
-                name="Test_Sample",
+                name="Test Sample",
                 otu_table=LatchFile(
                     "s3://latch-public/test-data/4318/micfunpred_test_counts.tsv"
                 ),
