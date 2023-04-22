@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-from latch import medium_task, workflow, small_task, map_task
+from latch import medium_task, large_task, workflow, small_task, map_task
 from latch.resources.launch_plan import LaunchPlan
 from latch.types import LatchDir, LatchFile
 
@@ -27,9 +27,9 @@ def organize_inputs(
     ]
 
 
-@medium_task
+@large_task
 def run_micfunpred(sample: MicFunPredInput) -> LatchDir:
-    """Task to run a software"""
+    """Task to run MicFunPred"""
 
     sample_name = sample.name.lower().replace(" ", "_")
     local_resultpath = Path(sample_name).resolve()
@@ -48,7 +48,7 @@ def run_micfunpred(sample: MicFunPredInput) -> LatchDir:
         "--output",
         str(local_resultpath),
         "--threads",
-        "32",
+        "96",
         "--contrib",
     ]
 
